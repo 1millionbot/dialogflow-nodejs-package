@@ -1,8 +1,25 @@
 "use strict";
 
-class WebhookRequest {
-  constructor(request) {
+const { Contexts } = require("./src/contexts");
+
+class WebhookAdapter {
+  constructor(request, response) {
+    if (request.body?.queryResult?.intent?.fulfillmentMessages) {
+      request.body.queryResult.fulfillmentMessages =
+        request.body.queryResult.fulfillmentMessages.map((message) => {
+          if (!message.platform) {
+            message.platform = "PLATFORM_UNSPECIFIED";
+          }
+          return message;
+        });
+    }
+
     this.request = request;
+    this.response = response;
+
+    this._fulfillmentMessages = [];
+    this._outputContexts = [];
+    this._followupEventInput = {};
   }
 
   get action() {
@@ -36,6 +53,114 @@ class WebhookRequest {
   get languageCode() {
     return this.request.body.queryResult.languageCode;
   }
+
+  get fulfillmentText() {
+    return this.request.body.queryResult.fulfillmentText;
+  }
+
+  get fulfillmentMessages() {
+    return this.request.body.queryResult.fulfillmentMessages;
+  }
+
+  get outputContexts() {
+    const projectId = this.request.body.session.split("/")[1];
+    const sessionId = this.request.body.session.split("/")[4];
+    const outputContexts = new Contexts(
+      this.request.body.queryResult.outputContexts,
+      projectId,
+      sessionId
+    );
+
+    this._outputContexts = outputContexts.contexts;
+
+    return outputContexts;
+  }
+
+  get sentimentAnalysisResult() {
+    return this.request.body.queryResult.sentimentAnalysisResult;
+  }
+
+  sendEvent(name, parameters, languageCode) {
+    this._followupEventInput = {
+      name,
+      parameters,
+      languageCode,
+    };
+
+    return this._followupEventInput;
+  }
+
+  addMessage(responses) {
+    let fulfillmentMessages = [];
+
+    for (const response of responses) {
+      const { type, message } = response;
+
+      if (type === "Text") {
+        fulfillmentMessages.push({
+          text: {
+            text: [message],
+          },
+          platform: "PLATFORM_UNSPECIFIED",
+        });
+      }
+
+      if (type === "Payload") {
+        fulfillmentMessages.push({
+          payload: message,
+          platform: "PLATFORM_UNSPECIFIED",
+        });
+      }
+    }
+
+    this._fulfillmentMessages = fulfillmentMessages;
+
+    return this._fulfillmentMessages;
+  }
+
+  createCardsButtons(items, itemTextValue, numberOfButtonsPerCard) {
+    let cards = [];
+    let buttons = [];
+
+    for (let i = 1; i <= items.length; i++) {
+      const item = items[i - 1];
+      const itemName = item[itemTextValue];
+      const button = {
+        type: "text",
+        text: itemName,
+        value: itemName,
+      };
+
+      buttons.push(button);
+
+      if (i % numberOfButtonsPerCard === 0 || i === items.length) {
+        cards.push({
+          buttons: buttons,
+        });
+        buttons = [];
+      }
+    }
+
+    return cards;
+  }
+
+  handleResponse(intentMap) {
+    const intentName = this.request.body.queryResult.intent.displayName;
+
+    if (!intentMap.get(intentName)) {
+      intentName = null;
+    }
+
+    let intentFunction = intentMap.get(intentName)(this);
+    let promise = Promise.resolve(intentFunction);
+    return promise.then(() => {
+      this.response.json({
+        fulfillmentMessages: this._fulfillmentMessages,
+        outputContexts: this._outputContexts,
+        followupEventInput: this._followupEventInput,
+      });
+    });
+  }
 }
 
-module.exports = WebhookRequest;
+module.exports = { WebhookAdapter };
