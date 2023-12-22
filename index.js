@@ -1,6 +1,7 @@
 "use strict";
 
 const { Contexts } = require("./src/contexts");
+const { structProtoToJson } = require("./src/structjson");
 
 class WebhookAdapter {
   constructor(request, response) {
@@ -27,7 +28,7 @@ class WebhookAdapter {
   }
 
   get parameters() {
-    return this.request.body.queryResult.parameters;
+    return structProtoToJson(this.request.body.queryResult.parameters);
   }
 
   get session() {
@@ -63,8 +64,15 @@ class WebhookAdapter {
   }
 
   get outputContexts() {
-    const projectId = this.request.body.session.split("/")[1];
-    const sessionId = this.request.body.session.split("/")[4];
+    let projectId = "";
+    let sessionId = "";
+    if (this.request.body.session) {
+      projectId = this.request.body.session.split("/")[1];
+      sessionId = this.request.body.session.split("/")[4];
+    } else {
+      projectId = this.request.body.queryResult.intent.name.split("/")[1];
+      sessionId = this.request.body.queryResult.intent.name.split("/")[4];
+    }
     const outputContexts = new Contexts(
       this.request.body.queryResult.outputContexts,
       projectId,
@@ -102,6 +110,7 @@ class WebhookAdapter {
             text: [message],
           },
           platform: "PLATFORM_UNSPECIFIED",
+          message: "text",
         });
       }
 
@@ -109,6 +118,7 @@ class WebhookAdapter {
         fulfillmentMessages.push({
           payload: message,
           platform: "PLATFORM_UNSPECIFIED",
+          message: "payload",
         });
       }
     }
@@ -145,7 +155,7 @@ class WebhookAdapter {
   }
 
   handleResponse(intentMap) {
-    const intentName = this.request.body.queryResult.intent.displayName;
+    let intentName = this.request.body.queryResult.intent.displayName;
 
     if (!intentMap.get(intentName)) {
       intentName = null;
