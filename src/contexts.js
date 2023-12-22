@@ -1,5 +1,7 @@
 "use strict";
 
+const { structProtoToJson } = require("./structjson");
+
 const DELETED_LIFESPAN_COUNT = 0;
 
 class Contexts {
@@ -10,10 +12,18 @@ class Contexts {
   }
 
   get(contextName) {
-    return this.contexts.find((context) => {
+    let context = this.contexts.find((context) => {
       const name = context.name.split("/")[6];
       return name === contextName;
     });
+
+    context = {
+      name: context.name,
+      lifespanCount: context.lifespanCount,
+      parameters: structProtoToJson(context.parameters),
+    };
+
+    return context;
   }
 
   set(contextName, lifespanCount, parameters = {}) {
