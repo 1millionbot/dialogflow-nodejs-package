@@ -28,7 +28,11 @@ class WebhookAdapter {
   }
 
   get parameters() {
-    return structProtoToJson(this.request.body.queryResult.parameters);
+    if (this.request.body.queryResult.parameters.fields) {
+      return structProtoToJson(this.request.body.queryResult.parameters);
+    } else {
+      return this.request.body.queryResult.parameters;
+    }
   }
 
   get session() {

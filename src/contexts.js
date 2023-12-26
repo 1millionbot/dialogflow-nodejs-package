@@ -17,10 +17,14 @@ class Contexts {
       return name === contextName;
     });
 
+    if (context.parameters.fields) {
+      context.parameters = structProtoToJson(context.parameters);
+    }
+
     context = {
       name: context.name,
       lifespanCount: context.lifespanCount,
-      parameters: structProtoToJson(context.parameters),
+      parameters: context.parameters,
     };
 
     return context;
