@@ -70,12 +70,13 @@ class WebhookAdapter {
   get outputContexts() {
     let projectId = "";
     let sessionId = "";
+
     if (this.request.body.session) {
       projectId = this.request.body.session.split("/")[1];
       sessionId = this.request.body.session.split("/")[4];
     } else {
       projectId = this.request.body.queryResult.intent.name.split("/")[1];
-      sessionId = this.request.body.queryResult.intent.name.split("/")[4];
+      sessionId = this.request.body.sessionId;
     }
     const outputContexts = new Contexts(
       this.request.body.queryResult.outputContexts,
