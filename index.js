@@ -168,7 +168,7 @@ class WebhookAdapter {
     let intentFunction = intentMap.get(intentName)(this);
     let promise = Promise.resolve(intentFunction);
     return promise.then(() => {
-      this.response.json({
+      this.response.send({
         fulfillmentMessages: this._fulfillmentMessages,
         outputContexts: this._outputContexts,
         followupEventInput: this._followupEventInput,
