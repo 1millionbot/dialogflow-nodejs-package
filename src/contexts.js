@@ -17,7 +17,11 @@ class Contexts {
       return name === contextName;
     });
 
-    if (context.parameters.fields) {
+    if (!context) {
+      return null;
+    }
+
+    if (context?.parameters?.fields) {
       context.parameters = structProtoToJson(context.parameters);
     }
 
