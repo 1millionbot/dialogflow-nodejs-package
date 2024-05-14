@@ -107,6 +107,7 @@ class WebhookAdapter {
 
     for (const response of responses) {
       const { type, message } = response;
+      const showUserFeedback = response.showUserFeedback || false;
 
       if (type === "Text") {
         fulfillmentMessages.push({
@@ -115,6 +116,7 @@ class WebhookAdapter {
           },
           platform: "PLATFORM_UNSPECIFIED",
           message: "text",
+          showUserFeedback,
         });
       }
 
@@ -123,6 +125,7 @@ class WebhookAdapter {
           payload: message,
           platform: "PLATFORM_UNSPECIFIED",
           message: "payload",
+          showUserFeedback,
         });
       }
     }
