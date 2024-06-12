@@ -171,11 +171,14 @@ class WebhookAdapter {
     let intentFunction = intentMap.get(intentName)(this);
     let promise = Promise.resolve(intentFunction);
     return promise.then(() => {
-      this.response.send({
+      const responsePayload = {
         fulfillmentMessages: this._fulfillmentMessages,
         outputContexts: this._outputContexts,
         followupEventInput: this._followupEventInput,
-      });
+      };
+      this.response.send(responsePayload);
+
+      return responsePayload;
     });
   }
 }
