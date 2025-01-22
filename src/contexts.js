@@ -13,7 +13,8 @@ class Contexts {
 
   get(contextName) {
     let context = this.contexts.find((context) => {
-      const name = context.name.split("/")[6];
+      const parts = context.name.split("/");
+      const name = parts[parts.length - 1];
       return name === contextName;
     });
 
