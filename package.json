@@ -1,6 +1,6 @@
 {
   "name": "dialogflow-nodejs-package",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "A Dialogflow package to use in projects.",
   "main": "index.js",
   "scripts": {

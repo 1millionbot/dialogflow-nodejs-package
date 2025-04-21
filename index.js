@@ -3,6 +3,22 @@
 const { Contexts } = require("./src/contexts");
 const { structProtoToJson } = require("./src/structjson");
 
+const channelsMap = {
+    aog: 'ACTIONS_ON_GOOGLE',
+    app: 'PLATFORM_UNSPECIFIED',
+    facebook: 'FACEBOOK',
+    genesys: 'GENESYS',
+    instagram: 'INSTAGRAM',
+    slack: 'SLACK',
+    teams: 'TEAMS',
+    telegram: 'TELEGRAM',
+    twitter: 'TWITTER',
+    voximplant: 'VOXIMPLANT',
+    web: 'PLATFORM_UNSPECIFIED',
+    whatsAppCloud: 'WHATSAPPCLOUD',
+    whatsapp: 'WHATSAPP',
+};
+
 class WebhookAdapter {
   constructor(request, response) {
     if (request.body?.queryResult?.intent?.fulfillmentMessages) {
@@ -104,6 +120,10 @@ class WebhookAdapter {
 
   addMessage(responses) {
     let fulfillmentMessages = [];
+    const channel = this.request.body?.conversation?.channel || 'web';
+    const platform =
+        channelsMap[channel] || 'PLATFORM_UNSPECIFIED';
+
 
     for (const response of responses) {
       const { type, message } = response;
@@ -114,7 +134,7 @@ class WebhookAdapter {
           text: {
             text: [message],
           },
-          platform: "PLATFORM_UNSPECIFIED",
+          platform,
           message: "text",
           showUserFeedback,
         });
@@ -123,7 +143,7 @@ class WebhookAdapter {
       if (type === "Payload") {
         fulfillmentMessages.push({
           payload: message,
-          platform: "PLATFORM_UNSPECIFIED",
+          platform,
           message: "payload",
           showUserFeedback,
         });
