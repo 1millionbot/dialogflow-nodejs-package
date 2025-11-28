@@ -126,7 +126,7 @@ class WebhookAdapter {
 
 
     for (const response of responses) {
-      const { type, message } = response;
+      const { type, message, payload } = response;
       const showUserFeedback = response.showUserFeedback || false;
 
       if (type === "Text") {
@@ -137,6 +137,7 @@ class WebhookAdapter {
           platform,
           message: "text",
           showUserFeedback,
+          ...(payload ? { payload } : {}),
         });
       }
 
